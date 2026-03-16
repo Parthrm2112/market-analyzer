@@ -95,19 +95,34 @@ export async function GET() {
     const symbol = '^NSEI'; // Nifty 50 Index
 
     let quote: any;
+    let sensexQuote: any;
     let result: any[];
     try {
-      quote = await yahooFinance.quote(symbol);
+      const quoteRes = await Promise.all([
+        yahooFinance.quote(symbol),
+        yahooFinance.quote('^BSESN')
+      ]);
+      quote = quoteRes[0];
+      sensexQuote = quoteRes[1];
+      
       const period1 = new Date();
       period1.setDate(period1.getDate() - 40);
-      result = await yahooFinance.historical(symbol, { period1, period2: new Date(), interval: '1d' });
+      const chartRes = await yahooFinance.chart(symbol, { period1, period2: new Date(), interval: '1d' });
+      result = chartRes.quotes;
     } catch (e) {
       // Retry once on ECONNRESET network drop
       await new Promise(r => setTimeout(r, 1000));
-      quote = await yahooFinance.quote(symbol);
+      const quoteRes = await Promise.all([
+        yahooFinance.quote(symbol),
+        yahooFinance.quote('^BSESN')
+      ]);
+      quote = quoteRes[0];
+      sensexQuote = quoteRes[1];
+
       const period1 = new Date();
       period1.setDate(period1.getDate() - 40);
-      result = await yahooFinance.historical(symbol, { period1, period2: new Date(), interval: '1d' });
+      const chartRes = await yahooFinance.chart(symbol, { period1, period2: new Date(), interval: '1d' });
+      result = chartRes.quotes;
     }
     const historicalData = result.slice(-30).map((item: any) => ({
       date: item.date.toISOString(),
@@ -190,6 +205,12 @@ export async function GET() {
         symbol: quote.symbol,
         marketState: quote.marketState,
         regularMarketTime: quote.regularMarketTime,
+      },
+      sensexQuote: {
+        price: sensexQuote.regularMarketPrice,
+        change: sensexQuote.regularMarketChange,
+        changePercent: sensexQuote.regularMarketChangePercent,
+        symbol: sensexQuote.symbol,
       },
       chartData: historicalData,
       news,

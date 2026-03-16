@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Activity, Clock, TrendingUp, DollarSign } from 'lucide-react';
+import { Activity, Clock, TrendingUp, LineChart } from 'lucide-react';
 import MetricCard from '@/components/MetricCard';
 import MarketChart from '@/components/MarketChart';
 import AIAnalyzer from '@/components/AIAnalyzer';
@@ -37,8 +37,8 @@ export default function Home() {
       try {
         const res = await fetch('/api/market/quote');
         if (res.ok) {
-          const activeQuote = await res.json();
-          setData((prev: any) => prev ? { ...prev, quote: activeQuote } : prev);
+          const { sensexQuote, ...activeQuote } = await res.json();
+          setData((prev: any) => prev ? { ...prev, quote: activeQuote, sensexQuote } : prev);
         }
       } catch (err) {
         console.error("Failed to update realtime quote", err);
@@ -95,7 +95,7 @@ export default function Home() {
     );
   }
 
-  const { quote, chartData, news, prediction } = data;
+  const { quote, sensexQuote, chartData, news, prediction } = data;
 
   const handleRefreshNews = async () => {
     try {
@@ -134,13 +134,21 @@ export default function Home() {
       <GlobalIndicators />
 
       {/* Top Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: '2rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" style={{ marginBottom: '2rem' }}>
         <MetricCard
-          title="Current Level"
+          title="NIFTY"
           value={`₹${quote.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           change={quote.change}
           changePercent={quote.changePercent}
-          icon={<DollarSign size={18} className="text-accent" color="var(--accent-primary)" />}
+          icon={<LineChart size={18} className="text-accent" color="var(--accent-primary)" />}
+        />
+        <MetricCard
+          title="SENSEX"
+          value={`₹${sensexQuote?.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '---'}`}
+          change={sensexQuote?.change}
+          changePercent={sensexQuote?.changePercent}
+          icon={<LineChart size={18} className="text-accent" color="var(--accent-primary)" />}
+          delay="delay-150"
         />
         <MetricCard
           title="Day High"

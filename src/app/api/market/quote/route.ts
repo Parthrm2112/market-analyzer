@@ -7,7 +7,10 @@ export async function GET() {
     try {
         const symbol = '^NSEI'; // Nifty 50 Index
 
-        const quote: any = await yahooFinance.quote(symbol);
+        const [quote, sensexQuote]: any = await Promise.all([
+            yahooFinance.quote(symbol),
+            yahooFinance.quote('^BSESN')
+        ]);
 
         return NextResponse.json({
             price: quote.regularMarketPrice,
@@ -16,6 +19,12 @@ export async function GET() {
             symbol: quote.symbol,
             marketState: quote.marketState,
             regularMarketTime: quote.regularMarketTime,
+            sensexQuote: {
+                price: sensexQuote.regularMarketPrice,
+                change: sensexQuote.regularMarketChange,
+                changePercent: sensexQuote.regularMarketChangePercent,
+                symbol: sensexQuote.symbol,
+            }
         });
     } catch (error) {
         console.error('Quote API Error:', error);
