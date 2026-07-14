@@ -19,7 +19,7 @@ export default function Home() {
 
     async function fetchMarketData() {
       try {
-        const res = await fetch('/api/market');
+        const res = await fetch(`/api/market?t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch data');
         const json = await res.json();
         setData(json);
@@ -35,7 +35,7 @@ export default function Home() {
 
     const fetchQuote = async () => {
       try {
-        const res = await fetch('/api/market/quote');
+        const res = await fetch(`/api/market/quote?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const { sensexQuote, ...activeQuote } = await res.json();
           setData((prev: any) => prev ? { ...prev, quote: activeQuote, sensexQuote } : prev);
@@ -47,7 +47,7 @@ export default function Home() {
 
     const fetchNews = async () => {
       try {
-        const res = await fetch('/api/market/news');
+        const res = await fetch(`/api/market/news?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const { news } = await res.json();
           setData((prev: any) => prev ? { ...prev, news } : prev);
